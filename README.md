@@ -172,7 +172,7 @@ NOTIFY_EMAIL=receiver@example.com
 
 ### 爬蟲查詢頁面
 <img width="1612" height="711" alt="image" src="https://github.com/user-attachments/assets/a174f73d-d797-435b-bb64-bd8bd4ed1442" />
-'''
+
 **可參考輸出csv範例檔案.csv**
   
 ## log 查詢頁面
