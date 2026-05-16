@@ -334,7 +334,7 @@ def scrape_district(driver: webdriver.Chrome, district: str) -> list[dict]:
 
     except Exception as e:
         print("錯誤：", type(e).__name__)
-        driver.save_screenshot(f"{district}_error_{datetime.now(TAIPEI_TZ).strftime('%Y%m%d_%H%M%S')}.png")
+        driver.save_screenshot(os.path.join(DATA_PATH, f"{district}_error_{datetime.now(TAIPEI_TZ).strftime('%Y%m%d_%H%M%S')}.png"))
         traceback.print_exc() # Use traceback for full exception info
         logger.error(f"{district} 爬取失敗：{e}", exc_info=True)
 
@@ -401,17 +401,21 @@ class ScheduleConfig(BaseModel):
 @crawler_app.post("/run")
 def trigger_run():
     """立即觸發一次爬蟲"""
-    logger.info("手動觸發爬蟲")
     if _running_lock.locked():
         logger.warning("爬蟲已在執行中，跳過此次")
-        return {"status": "skipped", "detail": "爬蟲已在執行中"}
-    threading.Thread(target=run_crawler, daemon=True).start()
-    return {"status": "running", "detail": "爬蟲已啟動"}
+        return schedule_status()
+    if not scheduler.running:
+        scheduler.start()
+    
+    scheduler.add_job(run_crawler, trigger="date", run_date=datetime.now())
+    logger.info("手動觸發爬蟲")
+    return schedule_status()
 
 @crawler_app.post("/set")
 def set_schedule(config: ScheduleConfig):
     """啟動排程：cron（指定星期幾 + 時間）"""
-
+    if not scheduler.running:
+        scheduler.start()
     scheduler.remove_all_jobs()
     scheduler.add_job(
         run_crawler, "cron",
@@ -420,51 +424,41 @@ def set_schedule(config: ScheduleConfig):
         minute=config.minute,
         id="crawler_job"
     )
-
     day_label = config.day_of_week if config.day_of_week != "*" else "每天"
-    detail = f"{day_label} {config.hour:02d}:{config.minute:02d}"
-
-    if not scheduler.running:
-        scheduler.start()
-
-    logger.info(f"排程已啟動：{detail}")
-    return {"status": "set", "detail": detail}
+    logger.info(f"排程已啟動：{day_label} {config.hour:02d}:{config.minute:02d}")
+    return schedule_status()
 
 @crawler_app.post("/stop")
 def stop_schedule():
-    """停止排程（保留設定，狀態變為 set）"""
+    """停止排程"""
     scheduler.remove_all_jobs()
     logger.info("排程已停止")
-    return {"status":  "idle", "detail": "排程已停止"}
+    return schedule_status()
 
 @crawler_app.get("/status")
 def schedule_status():
     """查詢目前真實狀態：running（執行中） / set（已排程） / idle（閒置）"""
-    
-    # 1. 檢查「此時此刻」爬蟲是不是正在執行（不論是手動還是排程觸發的）
+
     is_running = _running_lock.locked()
-    
-    # 2. 檢查排程器裡面有沒有工作
     jobs = scheduler.get_jobs()
     has_schedule = len(jobs) > 0
     next_run = str(jobs[0].next_run_time) if has_schedule else None
 
-    # 狀態分支判斷
     if is_running:
         return {
-            "status": "running",       # 真正正在跑
+            "status": "running",
             "next_run": next_run,
             "detail": "爬蟲正在執行中"
         }
     elif has_schedule:
         return {
-            "status": "set",     # 沒在跑，但時間到會自己動
+            "status": "set",
             "next_run": next_run,
             "detail": f"排程中，下次執行時間：{next_run}"
         }
     else:
         return {
-            "status": "idle",          # 沒在跑，未來也沒排程
+            "status": "idle",
             "next_run": None,
             "detail": "系統閒置中"
         }

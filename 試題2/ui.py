@@ -253,7 +253,7 @@ elif page == "Log 查詢":
 
                     if logs:
                         df = pd.DataFrame(logs)
-                        display_cols = [c for c in ["timestamp", "job", "message"] if c in df.columns]
+                        display_cols = [c for c in ["timestamp", "job", "level", "message"] if c in df.columns]
                         st.dataframe(df[display_cols], use_container_width=True)
                     else:
                         st.info("查無 log 資料")

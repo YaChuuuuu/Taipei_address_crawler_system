@@ -143,6 +143,7 @@ def scheduler_status():
 def scheduler_run_now():
     return _proxy_post("/run", "手動觸發爬蟲")
 
+
 # ── Log 查詢 ──────────────────────────────────────────────────────
 @app.get("/logs")
 async def get_logs(
@@ -190,12 +191,15 @@ async def get_logs(
 
     logs = []
     for stream in r.json().get("data", {}).get("result", []):
-        job_label = stream.get("stream", {}).get("job", "unknown")
+        stream_labels = stream.get("stream", {})
+        job_label   = stream_labels.get("job", "unknown")
+        level_label = stream_labels.get("level", "unknown")
         for ts_ns, message in stream.get("values", []):
             ts = datetime.fromtimestamp(int(ts_ns) / 1e9, tz=ZoneInfo("Asia/Taipei"))
             logs.append({
                 "timestamp": ts.isoformat(),
                 "job":       job_label,
+                "level":     level_label,
                 "message":   message,
             })
 
