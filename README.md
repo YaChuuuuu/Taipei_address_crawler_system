@@ -167,17 +167,23 @@ NOTIFY_EMAIL=receiver@example.com
 ---
 
 ## 執行畫面
-### 排程執行/管理頁面
+### 1. 排程執行/管理頁面
 <img width="1584" height="881" alt="image" src="https://github.com/user-attachments/assets/6c77e00a-68b3-45c7-a310-52b02ef67c9d" />
 
-### 爬蟲查詢頁面
-<img width="1612" height="711" alt="image" src="https://github.com/user-attachments/assets/a174f73d-d797-435b-bb64-bd8bd4ed1442" />
-
+### 2. 爬蟲查詢頁面
 **可參考輸出csv範例檔案.csv**
+<img width="1612" height="711" alt="image" src="https://github.com/user-attachments/assets/a174f73d-d797-435b-bb64-bd8bd4ed1442" />
   
-## log 查詢頁面
+### 3. log 查詢頁面
 <img width="1577" height="564" alt="image" src="https://github.com/user-attachments/assets/36d37f52-3ee7-46f1-9de0-5b4263c6a505" />
 
+### 4. 異常通知設定檢查
+- 至 http://localhost:8000 按下測試按鈕
+<img width="1644" height="635" alt="image" src="https://github.com/user-attachments/assets/b3727fbf-943a-46da-b7f0-ed2744f7ff0e" />
+
+
+- 若前述環境變數設定成功，則會收到信件
+<img width="1256" height="382" alt="image" src="https://github.com/user-attachments/assets/e1c93a4c-8bb6-4670-a430-2e9dcb8dfd0b" />
 
 ---
 
