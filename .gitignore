@@ -1,0 +1,17 @@
+# 環境變數（含密碼）
+.env
+
+# 專案內部文件
+CLAUDE.md
+
+# 爬蟲產生的資料（資料庫、log、CSV）
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
