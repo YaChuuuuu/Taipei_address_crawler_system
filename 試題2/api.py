@@ -67,39 +67,37 @@ def get_db_conn():
 # 輸入格式
 class QueryInput(BaseModel):
     city: str
-    district: str
+    township: str
 
 # 查詢資料庫
-def query_db(city: str, district: str):
-    with get_db_conn() as conn:
-        with conn.cursor(
-            cursor_factory=psycopg2.extras.RealDictCursor
-        ) as cur:
-
+def query_db(city: str, township: str):
+    conn = get_db_conn()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute("""
                 SELECT *
                 FROM scraped_items
                 WHERE city = %s AND district = %s
-            """, (city, district))
-
+            """, (city, township))
             rows = cur.fetchall()
-
-    return [dict(row) for row in rows]
+        return [dict(row) for row in rows]
+    finally:
+        conn.close()
 
 # API 端點
 @app.post("/query")
 def query(input: QueryInput):
-    logger.info(f"查詢請求：city={input.city}, district={input.district}")
+    logger.info(f"查詢請求：city={input.city}, township={input.township}")
     try:
-        results = query_db(input.city, input.district)
+        results = query_db(input.city, input.township)
     except Exception as e:
         logger.error(f"查詢失敗：{e}", exc_info=True)
         raise HTTPException(status_code=500, detail="資料庫查詢失敗")
 
     if not results:
-        logger.warning(f"{input.city}, {input.district}: 查無資料")
+        logger.error(f"{input.city}, {input.township}: 查無資料")
         return {"status": "no_data", "message": "查無資料", "data": []}
-    logger.info(f"{input.city}, {input.district}: 共 {len(results)} 筆資料")
+    logger.info(f"{input.city}, {input.township}: 共 {len(results)} 筆資料")
     return {"status": "ok", "count": len(results), "data": results}
     
 
@@ -214,8 +212,11 @@ async def health():
 
     try:
         conn = get_db_conn()
-        conn.cursor().execute("SELECT 1")
-        conn.close()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+        finally:
+            conn.close()
         checks["db"] = "ok"
     except Exception as e:
         logger.warning(f"資料庫異常：{e}")

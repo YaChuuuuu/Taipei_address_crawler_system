@@ -39,7 +39,7 @@ if page == "查詢爬蟲紀錄":
                 try:
                     r = requests.post(
                         f"{API_URL}/query",
-                        json={"city": city, "district": district},
+                        json={"city": city, "township": district},
                         timeout=15,
                     )
                     r.raise_for_status()

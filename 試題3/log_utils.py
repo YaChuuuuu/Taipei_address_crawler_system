@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from datetime import datetime
 
 _last_notify_time = 0.0
+_notify_lock = threading.Lock()
 
 _notify_log_path = os.path.join(os.getenv("DATA_PATH", "./data/"), "notify.log")
 _notify_logger = logging.getLogger("notify")
@@ -55,8 +56,12 @@ class LevelAwareLokiHandler(logging_loki.LokiHandler):
         if record.levelno >= logging.ERROR:
             cooldown = int(os.getenv("NOTIFY_COOLDOWN", "300"))
             now = time.time()
-            if now - _last_notify_time > cooldown:
-                _last_notify_time = now
+            should_notify = False
+            with _notify_lock:
+                if now - _last_notify_time > cooldown:
+                    _last_notify_time = now
+                    should_notify = True
+            if should_notify:
                 threading.Thread(
                     target=send_notification,
                     args=(record,),

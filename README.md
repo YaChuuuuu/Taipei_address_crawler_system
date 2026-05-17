@@ -5,27 +5,34 @@
 ## 系統架構
 
 ```mermaid
-graph LR
-    User["👤 使用者"]
+flowchart LR
+    User(["👤 使用者"])
 
-    subgraph Docker Compose
-        UI["ui :8501<br/>Streamlit 管理介面"]
-        API["api :8000<br/>FastAPI"]
-        Crawler["crawler :8001<br/>Selenium + APScheduler"]
-        PG[("postgres :5432<br/>PostgreSQL 16")]
-        Loki[("loki :3100<br/>Grafana Loki")]
+    subgraph FE ["前端層"]
+        UI["Streamlit<br/>ui :8501"]
+    end
+
+    subgraph APP ["應用層"]
+        API["FastAPI<br/>api :8000"]
+        Crawler["Selenium + Scheduler<br/>crawler :8001"]
+    end
+
+    subgraph DATA ["資料層"]
+        PG[("PostgreSQL<br/>:5432")]
+        Loki[("Loki<br/>:3100")]
     end
 
     Web(["🌐 ris.gov.tw"])
+    Email(["📧 Gmail SMTP"])
 
-    User -->|"瀏覽器"| UI
-    UI -->|"HTTP"| API
-    API -->|"查詢資料"| PG
-    API -->|"查詢 Log"| Loki
-    API -->|"排程控制"| Crawler
-    Crawler -->|"寫入資料"| PG
-    Crawler -->|"推送 Log"| Loki
-    Crawler -->|"Selenium 爬取"| Web
+    User --> UI
+    UI --> API
+    API -->|HTTP proxy| Crawler
+    Crawler -->|爬取| Web
+    API -->|讀取| DATA
+    Crawler -->|寫入| PG
+    APP -->|Log寫入| Loki
+    APP -->|ERROR 通知| Email
 ```
 
 ## 專案結構
@@ -167,22 +174,44 @@ NOTIFY_EMAIL=receiver@example.com
 ---
 
 ## 執行畫面
-### 1. 排程執行/管理頁面
+
+### 試題1 — 爬蟲程式
+
+框架選擇理由與排程設計說明詳見 [試題1/design.md](試題1/design.md)。
+
+**排程執行/管理**
+
 <img width="1584" height="881" alt="image" src="https://github.com/user-attachments/assets/6c77e00a-68b3-45c7-a310-52b02ef67c9d" />
 
-### 2. 爬蟲查詢頁面
-**可參考輸出csv範例檔案.csv**
+**可參考爬蟲csv範例檔案.csv**
+
+---
+
+### 試題2 — API 查詢服務
+
+
+
 <img width="1612" height="711" alt="image" src="https://github.com/user-attachments/assets/a174f73d-d797-435b-bb64-bd8bd4ed1442" />
-  
-### 3. log 查詢頁面
+
+---
+
+### 試題3 — Log 收集與異常通知
+
+**Log 查詢頁面**
+
+
+
+
 <img width="1577" height="564" alt="image" src="https://github.com/user-attachments/assets/36d37f52-3ee7-46f1-9de0-5b4263c6a505" />
 
-### 4. 異常通知設定檢查
+**異常通知設定檢查**
+
 - 至 http://localhost:8000 按下測試按鈕
+
 <img width="1644" height="635" alt="image" src="https://github.com/user-attachments/assets/b3727fbf-943a-46da-b7f0-ed2744f7ff0e" />
 
-
 - 若前述環境變數設定成功，則會收到信件
+
 <img width="1256" height="382" alt="image" src="https://github.com/user-attachments/assets/e1c93a4c-8bb6-4670-a430-2e9dcb8dfd0b" />
 
 ---
@@ -191,4 +220,4 @@ NOTIFY_EMAIL=receiver@example.com
 
 - 排程設定**不持久化**：crawler 容器重啟後排程狀態消失，需透過 UI 或 API 重新設定。
 - 資料存放於 `./data/`。
-- 首次啟動需等待 postgres 與 loki 健康檢查通過，crawler 才會啟動（約 30–60 秒）。
+- 首次啟動需等待 postgres 與 loki 健康檢查通過，crawler 才會啟動。

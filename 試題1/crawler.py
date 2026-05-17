@@ -23,7 +23,6 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import uvicorn
 
-debug = 0
 TAIPEI_TZ = ZoneInfo("Asia/Taipei")
 
 # ── 查詢條件 ───────────────────────────────────────────────────
@@ -204,7 +203,7 @@ def submit_captcha(driver, wait, captcha_code):
 
         return "RETRY"
 
-    except:
+    except Exception:
         return "SUCCESS"
 
 
@@ -352,28 +351,22 @@ def run_crawler():
         logger.info(f"爬蟲開始執行：{datetime.now(TAIPEI_TZ).strftime('%Y-%m-%d %H:%M:%S')}")
 
         try:
-            init_db()
             all_records = []
             driver = build_driver()
         except Exception as e:
             logger.error(f"爬蟲初始化失敗：{e}", exc_info=True)
             return
 
-        if debug:
-            districts = TAIPEI_DISTRICTS[:2]
-        else:
-            districts = TAIPEI_DISTRICTS
-
         try:
-            for district in districts:
+            for district in TAIPEI_DISTRICTS:
                 records = scrape_district(driver, district)
                 all_records.extend(records)
                 time.sleep(2)
         finally:
             driver.quit()
 
-        save_to_db(all_records)
         save_to_csv(all_records)
+        save_to_db(all_records)
 
         logger.info(f"全部完成，共爬取 {len(all_records)} 筆資料")
     finally:
