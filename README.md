@@ -39,9 +39,10 @@ flowchart LR
 
 ```
 .
-├── 試題1/          ← 爬蟲（crawler.py、Dockerfile、requirements.txt）
+├── 試題1/          ← 爬蟲與框架設計說明（crawler.py、Dockerfile、requirements.txt、design.md）
 ├── 試題2/          ← API + UI（api.py、ui.py、Dockerfile、Dockerfile.ui）
 ├── 試題3/          ← 共用 Log 模組（log_utils.py）
+├── 試題4/          ← 系統架構與說明 (architectture.md)
 ├── docker-compose.yml
 ├── .env.example    ← 環境變數範本（複製為 .env 後填入）
 └── data/           ← 執行時自動建立（log、資料庫 volume）
@@ -183,13 +184,13 @@ NOTIFY_EMAIL=receiver@example.com
 
 <img width="1584" height="881" alt="image" src="https://github.com/user-attachments/assets/6c77e00a-68b3-45c7-a310-52b02ef67c9d" />
 
-**可參考爬蟲csv範例檔案.csv**
+**完整結果可參考爬蟲csv範例檔案.csv**
 
 ---
 
 ### 試題2 — API 查詢服務
 
-
+<img width="1483" height="925" alt="image" src="https://github.com/user-attachments/assets/63aca098-d41d-49f9-9c04-9b5e40014138" />
 
 <img width="1612" height="711" alt="image" src="https://github.com/user-attachments/assets/a174f73d-d797-435b-bb64-bd8bd4ed1442" />
 
@@ -198,9 +199,6 @@ NOTIFY_EMAIL=receiver@example.com
 ### 試題3 — Log 收集與異常通知
 
 **Log 查詢頁面**
-
-
-
 
 <img width="1577" height="564" alt="image" src="https://github.com/user-attachments/assets/36d37f52-3ee7-46f1-9de0-5b4263c6a505" />
 
